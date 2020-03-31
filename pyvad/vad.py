@@ -7,6 +7,7 @@ import numpy as np
 import webrtcvad
 from librosa.core import resample
 from librosa.util import frame
+from sklearn.preprocessing import MinMaxScaler
 
 
 def vad(data, fs, fs_vad=16000, hop_length=30, vad_mode=0):
@@ -61,8 +62,10 @@ def vad(data, fs, fs_vad=16000, hop_length=30, vad_mode=0):
 
     elif data.dtype.kind == 'f':
         if np.abs(data).max() > 1:
-            raise ValueError(
-                'When data.type is float, data must be -1.0 <= data <= 1.0.')
+            # librosa.load()后有可能稍微大于1.0
+            data = MinMaxScaler((-1, 1)).fit_transform(data.reshape(-1, 1)).reshape(-1)
+            # raise ValueError(
+            #     'When data.type is float, data must be -1.0 <= data <= 1.0.')
         data = data.astype('f')
 
     else:
